@@ -17,7 +17,7 @@ services:
     dockerfile_path: Dockerfile
     source_dir: /
     github:
-      repo: Sagar1566/demo-auth
+      repo: Ruturaj2506/demo-auth
       branch: deploy
       deploy_on_push: true
     http_port: 8000
