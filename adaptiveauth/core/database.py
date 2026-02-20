@@ -15,6 +15,14 @@ _engine = None
 _SessionLocal = None
 
 
+def _fix_db_url(url: str) -> str:
+    """SQLAlchemy 2.x requires postgresql+psycopg2:// not postgresql://"""
+    if url.startswith("postgres://") or url.startswith("postgresql://"):
+        url = url.replace("postgres://", "postgresql+psycopg2://", 1)
+        url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
+    return url
+
+
 def get_engine(database_url: Optional[str] = None, echo: bool = False):
     """Get or create database engine."""
     global _engine
@@ -22,6 +30,7 @@ def get_engine(database_url: Optional[str] = None, echo: bool = False):
     if _engine is None:
         settings = get_settings()
         url = database_url or settings.DATABASE_URL
+        url = _fix_db_url(url)
         echo = echo or settings.DATABASE_ECHO
         
         # Configure engine based on database type
@@ -116,11 +125,12 @@ class DatabaseManager:
         """Get database engine."""
         if self._engine is None:
             connect_args = {}
-            if self.database_url.startswith("sqlite"):
+            url = _fix_db_url(self.database_url)
+            if url.startswith("sqlite"):
                 connect_args["check_same_thread"] = False
             
             self._engine = create_engine(
-                self.database_url,
+                url,
                 connect_args=connect_args,
                 echo=self.echo,
                 pool_pre_ping=True,
