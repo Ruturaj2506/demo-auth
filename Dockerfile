@@ -39,4 +39,4 @@ EXPOSE 8000
 RUN adduser --disabled-password --gecos "" appuser && chown -R appuser /app
 USER appuser
 
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port $PORT --workers 2"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1"]
