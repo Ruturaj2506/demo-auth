@@ -3,10 +3,16 @@ AdaptiveAuth Email Service
 Email notifications for authentication events.
 """
 from typing import List, Optional
-from fastapi_mail import FastMail, MessageSchema, MessageType, ConnectionConfig
 from pydantic import EmailStr
 
 from ..config import get_settings
+
+# Lazy import — fastapi_mail is optional; app works fine without email configured
+try:
+    from fastapi_mail import FastMail, MessageSchema, MessageType, ConnectionConfig
+    _MAIL_AVAILABLE = True
+except Exception:
+    _MAIL_AVAILABLE = False
 
 
 class EmailService:
@@ -19,14 +25,14 @@ class EmailService:
     @property
     def is_configured(self) -> bool:
         """Check if email is properly configured."""
-        return all([
+        return _MAIL_AVAILABLE and all([
             self.settings.MAIL_USERNAME,
             self.settings.MAIL_PASSWORD,
             self.settings.MAIL_SERVER,
             self.settings.MAIL_FROM
         ])
     
-    def _get_connection_config(self) -> ConnectionConfig:
+    def _get_connection_config(self) -> "ConnectionConfig":
         """Get email connection configuration."""
         return ConnectionConfig(
             MAIL_USERNAME=self.settings.MAIL_USERNAME or "",
@@ -40,7 +46,7 @@ class EmailService:
             VALIDATE_CERTS=True
         )
     
-    def _get_mail(self) -> FastMail:
+    def _get_mail(self) -> "FastMail":
         """Get FastMail instance."""
         if self._mail is None:
             config = self._get_connection_config()
